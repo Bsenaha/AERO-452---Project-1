@@ -38,17 +38,26 @@ OPS_orbit = TLE_init('TLE', mu_Earth); % convert and update
 %% ===== ID CHASER ORBIT =====
 
 % Get Target RV from COES
-[OPS.R, OPS.V] = COES2RV(OPS_orbit.theta, OPS_orbit.rpMag, OPS_orbit.ecc, mu_Earth); % perifocal
+[OPS.R_peri, OPS.V_peri] = COES2RV(OPS_orbit.theta, OPS_orbit.rpMag, OPS_orbit.ecc, mu_Earth); % perifocal
+% convert to ECI
 C_peri2ECI = peri2ECI(OPS_orbit.omega, OPS_orbit.inc, OPS_orbit.RAAN);
-OPS.R = C_peri2ECI * OPS.R; % ECI [km]
-OPS.V = C_peri2ECI * OPS.V; % ECI [km/s]
+OPS.R_ECI = C_peri2ECI * OPS.R_peri; % ECI [km]
+OPS.V_ECI = C_peri2ECI * OPS.V_peri; % ECI [km/s]
+
+% Initialize
 
 % Solve for Chaser initial position (100 km) on same orbit
 rho_missionstart = 100; %[km]
-[CABS.R] = PositionSolver(OPS_orbit.theta, OPS_orbit.omega, OPS_orbit.inc, OPS_orbit.RAAN, OPS_orbit.rpMag, OPS_orbit.ecc, mu_Earth, 100);
-
+% calc position and chaser theta
+[CABS.R_peri, CABS_orbit.theta] = PositionSolver(OPS_orbit.theta, OPS_orbit.rpMag, OPS_orbit.ecc, mu_Earth, 100); % perifocal
+CABS.R_ECI = C_peri2ECI * CABS.R_peri; % ECI [km] ** Initial Chaser Position in ECI **
 
 %% ===== DEFINING STATES =====
+
+% Redefine Target RV
+
+
+% Define Chaser RV
 
 
 
