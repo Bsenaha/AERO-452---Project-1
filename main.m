@@ -5,7 +5,7 @@
 
 clc; clear; close all
 
-%% PROJECT INFORMATION
+%% ===== PROJECT INFORMATION =====
 
 % Total Time to Capture (TTC): 10 days
 % Initial Relative Distance: 100 km
@@ -24,25 +24,25 @@ clc; clear; close all
 % Heavens above orbit link:
 % https://www.heavens-above.com/orbit.aspx?satid=2207&lat=0&lng=0&loc=Unspecified&alt=0&tz=UCT&cul=en
 
-%% TLE PROCESSING
+%% ===== TLE PROCESSING =====
 
 % read TLE to struct
 OPS_TLE = tleread('TLE'); % all angle measurements in degrees
 
 
-%% ID CHASER ORBIT
+%% ===== ID CHASER ORBIT =====
 
 
-%% DEFINING STATES
+%% ===== DEFINING STATES =====
 
 
-%% MANEUVER 1
+%% ===== MANEUVER 1 =====
 
 
-%% HOLD 1
+%% ===== HOLD 1 =====
 
 
 %% ...
 
 
-%% RESULTS
+%% ===== RESULTS =====
