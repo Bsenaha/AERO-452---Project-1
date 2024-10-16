@@ -13,6 +13,7 @@ clc; clear; close all
 % Holds:
 %   1. 20-40 km (w/ small rel speed)
 %   2. 1     km
+
 %   3. 0.300 km
 %   4. 20    m  (w/ small rel speed)
 
@@ -26,9 +27,10 @@ clc; clear; close all
 
 %% ===== TLE PROCESSING =====
 
-% read TLE to struct
-OPS_TLE = tleread('TLE'); % all angle measurements in degrees
-
+% Initialize TLE
+OPS_TLE_read = tleread('TLE'); % using MATLAB's built-in
+OPS_TLE = TLE_init(OPS_TLE_read); % convert and update
+clear OPS_TLE_read
 
 %% ===== ID CHASER ORBIT =====
 
