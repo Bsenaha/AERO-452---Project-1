@@ -39,18 +39,15 @@ OPS_orbit = TLE_init('TLE', mu_Earth); % convert and update
 
 % Get Target RV from COES
 [OPS.R_peri, OPS.V_peri] = COES2RV(OPS_orbit.theta, OPS_orbit.rpMag, OPS_orbit.ecc, mu_Earth); % perifocal
-% convert to ECI
+% Convert to ECI
 C_peri2ECI = peri2ECI(OPS_orbit.omega, OPS_orbit.inc, OPS_orbit.RAAN);
 OPS.R_ECI = C_peri2ECI * OPS.R_peri; % ECI [km]
 OPS.V_ECI = C_peri2ECI * OPS.V_peri; % ECI [km/s]
 
-% Initialize
 
-% Solve for Chaser initial position (100 km) on same orbit
+% Solve for Chaser initial position (100 km) on lower altitude orbit
 rho_missionstart = 100; %[km]
-% calc position and chaser theta
-[CABS.R_peri, CABS_orbit.theta] = PositionSolver(OPS_orbit.theta, OPS_orbit.rpMag, OPS_orbit.ecc, mu_Earth, 100); % perifocal
-CABS.R_ECI = C_peri2ECI * CABS.R_peri; % ECI [km] ** Initial Chaser Position in ECI **
+
 
 %% ===== DEFINING STATES =====
 
@@ -59,21 +56,43 @@ CABS.R_ECI = C_peri2ECI * CABS.R_peri; % ECI [km] ** Initial Chaser Position in 
 
 % Define Chaser RV
 
+% Define initial relative velocity
+
 
 
 %% ===== MANEUVER 1 =====
 
-
+% * Cruise from 100km to 35 km *
 
 %% ===== HOLD 1 =====
 
-% Define Hold Duration
+% * Hold/Cruise from 35km to 25km *
 
-% Propogate
+% * Additional holding? *
 
-%% ...
+%% ===== MANEUVER 2 =====
 
+% * Burn from current orbit to Target orbit @ 1km rel. distance ahead of target *
 
+%% ===== HOLD 2 =====
+
+% * Hold @ 1km rel. distance *
+
+%% ===== MANEUVER 3 =====
+
+% * Vbar Burn from 1km rel. distance to 300m rel. distance *
+
+%% ===== HOLD 3 =====
+
+% * Hold @ 300m rel. distance *
+
+%% ===== MANEUVER 4 =====
+
+% * Vbar Burn from 300m rel. distance to 20m rel. distance *
+
+%% ===== HOLD 4 (FINAL HOLD) =====
+
+% * Hold @ 20m rel. distance *
 
 %% ===== RESULTS =====
 

@@ -21,3 +21,25 @@ Orbit Type: GEO
 
 Heavens above orbit link:
 https://www.heavens-above.com/orbit.aspx?satid=2207&lat=0&lng=0&loc=Unspecified&alt=0&tz=UCT&cul=en
+
+===== MISSION ITINERARY =====
+
+* Begin at 100km orbit lower than target orbit
+    - this will give slight relative deltav to get us to first holding range
+
+* Reach 40km and perform first hold
+    - no burn required, cruise during this hold from 40km to 20km (or as close as possible)
+
+* Perform Burn 1 to reach 1km relative distance in FRONT of target 
+
+* Perform second hold
+
+* Perform Vbar approach hop from 1km to 300m holding position
+
+* Perform third hold
+
+* Perform final Vbar approach burn to final holding position
+
+* Perform final hold until Mission Duration reached
+
+== Mission Complete !! ==
