@@ -1,8 +1,8 @@
-function [TLEstruct] = TLE_init(TLE)
+function [TLEstruct] = TLE_init(TLE_file, mu)
 % TLE Initialization
 
 % INPUT
-% TLE = TLE struct from tleread
+% TLE_file = raw TLE file
 
 % OUTPUT
 % TLEstruct = TLE struct updated with other necessary vals
@@ -10,7 +10,7 @@ function [TLEstruct] = TLE_init(TLE)
 % function takes in tle struct from tleread, updates and outputs tle struct
 % with all other necessary orbital elements
 
-mu_Earth = 398600; % [km^3/s2]
+TLE = tleread(TLE_file); % using MATLAB's built-in
 
 % reassign existing with correct units
 TLEstruct.epoch = TLE.Epoch; % Epoch date
@@ -22,14 +22,14 @@ TLEstruct.omega = deg2rad(TLE.ArgumentOfPeriapsis); % argument of periapse [rad]
 TLEstruct.MA = deg2rad(TLE.MeanAnomaly); % mean anomaly [rad]
 
 TLEstruct.E = EccentricAnomalyNewtons(TLEstruct.ecc, TLEstruct.MA); % eccentric anomaly at epoch [rad]
-TLEstruct.TA = 2 * atan2(tan(TLEstruct.E / 2) * sqrt(1 + TLEstruct.ecc), sqrt(1 - TLEstruct.ecc)); % true anomaly [rad]
+TLEstruct.theta = 2 * atan2(tan(TLEstruct.E / 2) * sqrt(1 + TLEstruct.ecc), sqrt(1 - TLEstruct.ecc)); % true anomaly [rad]
 
 TLEstruct.P = 86400/TLEstruct.MM; % Period [sec]
-TLEstruct.a = (sqrt(mu_Earth) * TLEstruct.P / (2 * pi))^(2 / 3); % semimajor axis of orbit [km]
-TLEstruct.h = sqrt(TLEstruct.a * mu_Earth * (1 - TLEstruct.ecc^2)); % specific angular momentum [km2/s]
-TLEstruct.Energy = -.5 * mu_Earth / TLEstruct.a; % specific energy [km2/s2]
-TLEstruct.rpMag = TLEstruct.h^2 / (mu_Earth * (1 + TLEstruct.ecc)); % radius of perigee magnitude [km]
-TLEstruct.raMag = TLEstruct.h^2 / (mu_Earth * (1 - TLEstruct.ecc)); % radius of apogee magnitude [km]
+TLEstruct.a = (sqrt(mu) * TLEstruct.P / (2 * pi))^(2 / 3); % semimajor axis of orbit [km]
+TLEstruct.h = sqrt(TLEstruct.a * mu * (1 - TLEstruct.ecc^2)); % specific angular momentum [km2/s]
+TLEstruct.Energy = -.5 * mu / TLEstruct.a; % specific energy [km2/s2]
+TLEstruct.rpMag = TLEstruct.h^2 / (mu * (1 + TLEstruct.ecc)); % radius of perigee magnitude [km]
+TLEstruct.raMag = TLEstruct.h^2 / (mu * (1 - TLEstruct.ecc)); % radius of apogee magnitude [km]
 end
 
 % Eccentric Anomaly Solver (Newton's Method)

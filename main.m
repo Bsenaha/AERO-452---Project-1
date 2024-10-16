@@ -5,6 +5,9 @@
 
 clc; clear; close all
 
+% global use
+mu_Earth = 398600; % [km^3/s2]
+
 %% ===== PROJECT INFORMATION =====
 
 % Total Time to Capture (TTC): 10 days
@@ -21,21 +24,28 @@ clc; clear; close all
 % **will be referenced as "OPS"**
 % Orbit Type: GEO
 
+% Chaser Information
+% Name: CABS
+
 % Heavens above orbit link:
 % https://www.heavens-above.com/orbit.aspx?satid=2207&lat=0&lng=0&loc=Unspecified&alt=0&tz=UCT&cul=en
 
 %% ===== TLE PROCESSING =====
 
 % Initialize TLE
-OPS_TLE_read = tleread('TLE'); % using MATLAB's built-in
-OPS_TLE = TLE_init(OPS_TLE_read); % convert and update
-clear OPS_TLE_read
+OPS_orbit = TLE_init('TLE', mu_Earth); % convert and update
 
 %% ===== ID CHASER ORBIT =====
 
-% Get RV from COES
+% Get Target RV from COES
+[OPS.R, OPS.V] = COES2RV(OPS_orbit.theta, OPS_orbit.rpMag, OPS_orbit.ecc, mu_Earth); % perifocal
+C_peri2ECI = peri2ECI(OPS_orbit.omega, OPS_orbit.inc, OPS_orbit.RAAN);
+OPS.R = C_peri2ECI * OPS.R; % ECI [km]
+OPS.V = C_peri2ECI * OPS.V; % ECI [km/s]
 
-% Solve for 100km away on same orbit
+% Solve for Chaser initial position (100 km) on same orbit
+rho_missionstart = 100; %[km]
+[CABS.R] = PositionSolver(OPS_orbit.theta, OPS_orbit.omega, OPS_orbit.inc, OPS_orbit.RAAN, OPS_orbit.rpMag, OPS_orbit.ecc, mu_Earth, 100);
 
 
 %% ===== DEFINING STATES =====
