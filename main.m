@@ -13,7 +13,6 @@ clc; clear; close all
 % Holds:
 %   1. 20-40 km (w/ small rel speed)
 %   2. 1     km
-
 %   3. 0.300 km
 %   4. 20    m  (w/ small rel speed)
 
@@ -34,17 +33,28 @@ clear OPS_TLE_read
 
 %% ===== ID CHASER ORBIT =====
 
+% Get RV from COES
+
+% Solve for 100km away on same orbit
+
 
 %% ===== DEFINING STATES =====
+
 
 
 %% ===== MANEUVER 1 =====
 
 
+
 %% ===== HOLD 1 =====
 
+% Define Hold Duration
+
+% Propogate
 
 %% ...
 
 
+
 %% ===== RESULTS =====
+
