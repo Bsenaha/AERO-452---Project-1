@@ -8,7 +8,6 @@ function [C_ECI2LVLH] = ECI2LVLH(R, V)
 % OUTPUT:
 % C_ECI2LVLH = rotation matrix from ECI to LVLH
 
-
 % calculate h
 h = cross(R,V);
 
