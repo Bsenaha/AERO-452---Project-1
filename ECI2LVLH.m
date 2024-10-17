@@ -14,6 +14,7 @@ h = cross(R,V);
 % define i, j ,k
 i = R / norm(R);
 k = h / norm(h);
+% merge conflict
 j = cross(k, i);
 
 % create rotation matrix
