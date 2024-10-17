@@ -11,6 +11,7 @@ options = odeset('RelTol',1e-8,'AbsTol',1e-8);
 
 %% ===== PROJECT INFORMATION =====
 
+
 % Total Time to Capture (TTC): 10 days
 % Initial Relative Distance: 100 km
 
