@@ -117,18 +117,18 @@ ind = 1; % index
 % initialize
 OPS_R_man1 = [];
 CABS_R_man1 = [];
-rho = norm(rho_LVLH); % set current rho 
+rho = norm(rho_LVLH); % set current rho
 
 % step into UV until desired rho met
 while rho(ind) > norm(rho_f)
-    [OPS.R_ECI, OPS.V_ECI] = UV(OPS.R_ECI, OPS.V_ECI, dt, mu_Earth);    % Target UV 
+    [OPS.R_ECI, OPS.V_ECI] = UV(OPS.R_ECI, OPS.V_ECI, dt, mu_Earth);    % Target UV
     [CABS.R_ECI, CABS.V_ECI] = UV(CABS.R_ECI, CABS.V_ECI, dt, mu_Earth);% Chaser UV
     
     OPS_R_man1(1:3, ind) = OPS.R_ECI;   % assign Target xyz positions for plotting
     CABS_R_man1(1:3, ind) = CABS.R_ECI; % assign Chaser xyz positions for plotting
     
     % calculate relative distance
-    rho = [rho, norm(CABS.R_ECI - OPS.R_ECI)];  
+    rho = [rho, norm(CABS.R_ECI - OPS.R_ECI)];
     
     % increment
     ind = ind + 1;
@@ -159,6 +159,39 @@ disp(" ")
 disp("===== HOLD 1 =====")
 
 % * Hold/Cruise from 35km to 25km *
+% Use UV to find maneuver duration
+rho_f = 35; % rho at end of maneuver [km]
+
+% define UV sizing
+dt = 1; % size of time step [s]
+t = 1; % initialize [s]
+ind = 1; % index
+
+% initialize
+OPS_R_man1 = [];
+CABS_R_man1 = [];
+rho = norm(rho_LVLH); % set current rho
+
+% step into UV until desired rho met
+while rho(ind) > norm(rho_f)
+    [OPS.R_ECI, OPS.V_ECI] = UV(OPS.R_ECI, OPS.V_ECI, dt, mu_Earth);    % Target UV
+    [CABS.R_ECI, CABS.V_ECI] = UV(CABS.R_ECI, CABS.V_ECI, dt, mu_Earth);% Chaser UV
+    
+    OPS_R_man1(1:3, ind) = OPS.R_ECI;   % assign Target xyz positions for plotting
+    CABS_R_man1(1:3, ind) = CABS.R_ECI; % assign Chaser xyz positions for plotting
+    
+    % calculate relative distance
+    rho = [rho, norm(CABS.R_ECI - OPS.R_ECI)];
+    
+    % increment
+    ind = ind + 1;
+    t = [t, ind * dt];
+end
+
+% find maneuver duration
+t_man2 = t(end); % duration of maneuver 1 [s]
+disp("MANEUVER 2 DURATION: " + t_man2 / 3600 + " hrs")
+
 
 % * Additional holding? *
 
