@@ -54,7 +54,7 @@ CABS_orbit = OPS_orbit; % clone target orbit to chaser
 % Solving for Chaser initial position (100 km) on lower altitude orbit:
 rho_missionstart = 100; %[km]
 % reassign chaser rp and true anomaly
-altitude_difference = 20; % altitude difference between target and chaser orbits [km]
+altitude_difference = 15; % altitude difference between target and chaser orbits [km]
 CABS_orbit.rpMag = OPS_orbit.rpMag - altitude_difference; % periapse radius of chaser [km]
 [CABS.R_peri, CABS_orbit.theta] = PositionSolver(OPS_orbit.theta, OPS_orbit.rpMag, CABS_orbit.rpMag, OPS_orbit.ecc, mu_Earth, rho_missionstart); % perifocal
 
@@ -139,6 +139,7 @@ end
 t_man1 = t(end); % duration of maneuver 1 [s]
 disp("MANEUVER 1 DURATION: " + t_man1 / 3600 + " hrs")
 
+%{
 % plots
 figure()
 hrs = t./3600;
@@ -152,6 +153,7 @@ plot3(OPS_R_man1(1,1), OPS_R_man1(2,1), OPS_R_man1(3,1), 'o')
 plot3(CABS_R_man1(1,:), CABS_R_man1(2,:), CABS_R_man1(3,:))
 plot3(CABS_R_man1(1,1), CABS_R_man1(2,1), CABS_R_man1(3,1), 'o')
 grid minor
+%}
 
 disp(" ")
 %% ===== HOLD 1 =====
@@ -194,6 +196,7 @@ disp("MANEUVER 2 DURATION: " + t_man2 / 3600 + " hrs")
 
 
 % * Additional holding? *
+% closest we can be is the periapse radius difference
 
 disp(" ")
 %% ===== MANEUVER 2 =====
