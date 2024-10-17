@@ -14,7 +14,11 @@ h = cross(R,V);
 % define i, j ,k
 i = R / norm(R);
 k = h / norm(h);
+<<<<<<< HEAD
 %hah
+=======
+% this makes a change
+>>>>>>> refs/remotes/origin/HEAD
 j = cross(k, i);
 
 % create rotation matrix
