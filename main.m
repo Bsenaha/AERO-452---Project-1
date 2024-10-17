@@ -107,36 +107,23 @@ disp("===== MANEUVER 1 =====")
 % * Cruise from 100km to 35 km *
 
 % Use UV to find maneuver duration
+% define necessary parameters to call UV solver
+
 rho_f = 35; % rho at end of maneuver [km]
+rho_0 = norm(rho_LVLH); % initial/current rho [km]
 
-% define UV sizing
-dt = 1; % size of time step [s]
-t = 1; % initialize [s]
-ind = 1; % index
+% call rho comparison to get states between rho values
+[t, OPS_states, CABS_states, rho] = rhoComparison(rho_0, rho_f, OPS.R_ECI, OPS.V_ECI, CABS.R_ECI, CABS.V_ECI, mu_Earth);
 
-% initialize
-OPS_R_man1 = [];
-CABS_R_man1 = [];
-rho = norm(rho_LVLH); % set current rho
+% assign state outputs
+OPS.R_ECI = OPS_states(1:3, end); % update target position [km]
+OPS.V_ECI = OPS_states(4:6, end); % update target velocity [km]
+CABS.R_ECI = CABS_states(1:3, end); % update chaser position [km]
+CABS.V_ECI = CABS_states(4:6, end); % update chaser velocity [km]
 
-% step into UV until desired rho met
-while rho(ind) > norm(rho_f)
-    [OPS.R_ECI, OPS.V_ECI] = UV(OPS.R_ECI, OPS.V_ECI, dt, mu_Earth);    % Target UV
-    [CABS.R_ECI, CABS.V_ECI] = UV(CABS.R_ECI, CABS.V_ECI, dt, mu_Earth);% Chaser UV
-    
-    OPS_R_man1(1:3, ind) = OPS.R_ECI;   % assign Target xyz positions for plotting
-    CABS_R_man1(1:3, ind) = CABS.R_ECI; % assign Chaser xyz positions for plotting
-    
-    % calculate relative distance
-    rho = [rho, norm(CABS.R_ECI - OPS.R_ECI)];
-    
-    % increment
-    ind = ind + 1;
-    t = [t, ind * dt];
-end
-
-% find maneuver duration
-t_man1 = t(end); % duration of maneuver 1 [s]
+rho_ECI = CABS.R_ECI - OPS.R_ECI; % update rho
+% convert to LVLH (and change hold 1 rho)
+t_man1 = t(end); % maneuver duration [s]
 disp("MANEUVER 1 DURATION: " + t_man1 / 3600 + " hrs")
 
 %{
@@ -147,11 +134,11 @@ plot(hrs, rho)
 grid minor
 
 figure()
-plot3(OPS_R_man1(1,:), OPS_R_man1(2,:), OPS_R_man1(3,:))
+plot3(OPS_states(1,:), OPS_states(2,:), OPS_states(3,:))
 hold on
-plot3(OPS_R_man1(1,1), OPS_R_man1(2,1), OPS_R_man1(3,1), 'o')
-plot3(CABS_R_man1(1,:), CABS_R_man1(2,:), CABS_R_man1(3,:))
-plot3(CABS_R_man1(1,1), CABS_R_man1(2,1), CABS_R_man1(3,1), 'o')
+plot3(OPS_states(1,1), OPS_states(2,1), OPS_states(3,1), 'o')
+plot3(CABS_states(1,:), CABS_states(2,:), CABS_states(3,:))
+plot3(CABS_states(1,1), CABS_states(2,1), CABS_states(3,1), 'o')
 grid minor
 %}
 
@@ -162,41 +149,48 @@ disp("===== HOLD 1 =====")
 
 % * Hold/Cruise from 35km to 25km *
 % Use UV to find maneuver duration
-rho_f = 35; % rho at end of maneuver [km]
 
-% define UV sizing
-dt = 1; % size of time step [s]
-t = 1; % initialize [s]
-ind = 1; % index
+rho_f = 25; % rho at end of maneuver [km]
+rho_0 = norm(rho_ECI); %**change to rho_LVLH once calculated**
 
-% initialize
-OPS_R_man1 = [];
-CABS_R_man1 = [];
-rho = norm(rho_LVLH); % set current rho
+% call rho comparison to get states between rho values
+[t, OPS_states, CABS_states, rho] = rhoComparison(rho_0, rho_f, OPS.R_ECI, OPS.V_ECI, CABS.R_ECI, CABS.V_ECI, mu_Earth);
 
-% step into UV until desired rho met
-while rho(ind) > norm(rho_f)
-    [OPS.R_ECI, OPS.V_ECI] = UV(OPS.R_ECI, OPS.V_ECI, dt, mu_Earth);    % Target UV
-    [CABS.R_ECI, CABS.V_ECI] = UV(CABS.R_ECI, CABS.V_ECI, dt, mu_Earth);% Chaser UV
-    
-    OPS_R_man1(1:3, ind) = OPS.R_ECI;   % assign Target xyz positions for plotting
-    CABS_R_man1(1:3, ind) = CABS.R_ECI; % assign Chaser xyz positions for plotting
-    
-    % calculate relative distance
-    rho = [rho, norm(CABS.R_ECI - OPS.R_ECI)];
-    
-    % increment
-    ind = ind + 1;
-    t = [t, ind * dt];
-end
+% assign state outputs
+OPS.R_ECI = OPS_states(1:3, end); % update target position [km]
+OPS.V_ECI = OPS_states(4:6, end); % update target velocity [km]
+CABS.R_ECI = CABS_states(1:3, end); % update chaser position [km]
+CABS.V_ECI = CABS_states(4:6, end); % update chaser velocity [km]
 
-% find maneuver duration
-t_man2 = t(end); % duration of maneuver 1 [s]
-disp("MANEUVER 2 DURATION: " + t_man2 / 3600 + " hrs")
+rho_ECI = CABS.R_ECI - OPS.R_ECI; % update
+% convert to LVLH (and change hold 1 rho)
+t_hold1 = t(end); % maneuver duration [s]
+disp("HOLD 1 DURATION: " + t_hold1 / 3600 + " hrs")
+disp(" ")
 
+%% * Additional holding? *
+%{
+disp("Additional Holding??")
+% finding the closest we can get on this orbit:
 
-% * Additional holding? *
-% closest we can be is the periapse radius difference
+rho_f = altitude_difference + .25; % rho at end of maneuver [km]
+rho_0 = norm(rho_ECI); %**change to rho_LVLH once calculated**
+
+% call rho comparison to get states between rho values
+[t, OPS_states, CABS_states, rho] = rhoComparison(rho_0, rho_f, OPS.R_ECI, OPS.V_ECI, CABS.R_ECI, CABS.V_ECI, mu_Earth);
+
+% assign state outputs
+OPS.R_ECI = OPS_states(1:3, end); % update target position [km]
+OPS.V_ECI = OPS_states(4:6, end); % update target velocity [km]
+CABS.R_ECI = CABS_states(1:3, end); % update chaser position [km]
+CABS.V_ECI = CABS_states(4:6, end); % update chaser velocity [km]
+
+rho_ECI = CABS.R_ECI - OPS.R_ECI; % update
+% convert to LVLH
+t_hold1add = t(end); % maneuver duration [s]
+disp("HOLD 1 (additional) DURATION: " + t_hold1add / 3600 + " hrs")
+disp(norm(rho_ECI))
+%}
 
 disp(" ")
 %% ===== MANEUVER 2 =====
