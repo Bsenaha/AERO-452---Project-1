@@ -14,7 +14,7 @@ h = cross(R,V);
 % define i, j ,k
 i = R / norm(R);
 k = h / norm(h);
-% ablah
+% this makes a change
 j = cross(k, i);
 
 % create rotation matrix
