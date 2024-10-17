@@ -1,0 +1,40 @@
+% Cruise Phase Rho Comparison
+function [t, , V] = rhoComparison(rho_0, rho_f, A.R, A.V, B.R, B.V, mu)
+% This function uses UV to for Maneuver 1 and Hold 1 to find phase
+% duration in seconds
+
+% INPUT:
+
+% OUTPUT:
+
+
+% define UV sizing
+dt = 1; % size of time step [s]
+t = 1; % initialize [s]
+ind = 1; % index
+
+% initialize
+OPS_R_man1 = [];
+CABS_R_man1 = [];
+rho = norm(rho_LVLH); % set current rho
+
+% step into UV until desired rho met
+while rho(ind) > norm(rho_f)
+    [A.R, A.V] = UV(A.R, A.V, dt, mu);  % Target UV
+    [B.R, B.V] = UV(B.R, B.V, dt, mu);% Chaser UV
+    
+    AR_states(1:3, ind) = A.R;   % assign Target xyz positions
+    AR_states(4:6, ind) = A.V;   % assign Target xyz velocity
+
+    BR_states(1:3, ind) = B.R; % assign Chaser xyz positions
+    BR_states(4:6, ind) = B.V; % assign Chaser xyz velocity
+    
+    % calculate relative distance
+    rho = [rho, norm(B.R - A.R)];
+    
+    % increment
+    ind = ind + 1;
+    t = [t, ind * dt];
+end
+
+R = AR_states
