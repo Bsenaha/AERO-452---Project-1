@@ -15,7 +15,7 @@ options = odeset('RelTol',1e-8,'AbsTol',1e-8);
 % Initial Relative Distance: 100 km
 
 % Holds:
-%   1. 20-40 km (w/ small rel speed)
+%   1. 20-40 km (w/ small rel speed on order of m/s)
 %   2. 1     km
 %   3. 0.300 km
 %   4. 20    m  (w/ small rel speed)
