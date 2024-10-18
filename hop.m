@@ -19,7 +19,7 @@ h = 4 * deltav_y / n; % calculate height of hop
 
 % define initial state
 R_0 = [0; downrange; 0]; % Initial LVLH coords [km]
-V_0 = [0; deltav_y; 0];        % Initial LVLH rel. velocity [km/s]
+V_0 = [0; deltav_y; 0];  % Initial LVLH rel. velocity [km/s]
 state0 = [R_0; V_0]; % initial state in LVLH
 
 options = odeset('RelTol',1e-8,'AbsTol',1e-8);

@@ -40,12 +40,12 @@ OPS_orbit = TLE_init('TLE', mu_Earth); % convert and update
 
 disp("===== ID CHASER ORBIT =====")
 
-disp(" ")
+
 %% ===== DEFINING STATES =====
 
 disp("===== DEFINING STATES =====")
 
-disp(" ")
+
 %% ===== MANEUVER 1 =====
 
 disp("===== MANEUVER 1 =====")
@@ -61,7 +61,7 @@ y = -60; %[km]
 % assign outputs
 man1_R = out_man1(:,1:3); %[km]
 
-disp(" ")
+
 %% ===== HOLD 1 =====
 
 disp("===== HOLD 1 =====")
@@ -77,7 +77,7 @@ downrange = man1_R(end, 2); %[km]
 hold1_R = out_hold1(:,1:3);
 hold1_V = out_hold1(:, 4:6);
 
-disp(" ")
+
 %% ===== MANEUVER 2 =====
 
 disp("===== MANEUVER 2 =====")
@@ -93,14 +93,14 @@ y = -39; %[km]
 % assign outputs
 man2_R = out_man2(:,1:3); %[km]
 
-disp(" ")
+
 %% ===== HOLD 2 =====
 
 disp("===== HOLD 2 =====")
 
 % * Hold @ 1km rel. distance *
 
-disp(" ")
+
 %% ===== MANEUVER 3 =====
 
 disp("===== MANEUVER 3 =====")
@@ -116,14 +116,14 @@ y = -.7; %[km]
 % assign outputs
 man3_R = out_man3(:,1:3); %[km]
 
-disp(" ")
+
 %% ===== HOLD 3 =====
 
 disp("===== HOLD 3 =====")
 
 % * Hold @ 300m rel. distance *
 
-disp(" ")
+
 %% ===== MANEUVER 4 =====
 
 disp("===== MANEUVER 4 =====")
@@ -135,18 +135,27 @@ downrange = .3; %[km]
 y = -0.28; %[km]
 
 % call hop function
-[t4, deltav_y4, h4, out4] = hop(downrange, y, OPS_orbit.P);
+[t_man4, deltav_man4, h_man4, out_man4] = hop(downrange, y, OPS_orbit.P);
 % assign outputs
-man4_R = out4(:,1:3); %[km]
+man4_R = out_man4(:,1:3); %[km]
 
-disp(" ")
-%% ===== HOLD 4 (FINAL HOLD) =====
 
-disp("===== HOLD 4 =====")
+%% ===== MANEUVER 5 =====
 
-% ** Vbar approach with slight rel. velocity
+disp("===== MANEUVER 5 =====")
 
-disp(" ")
+% ** FINALL APPROACH - Vbar approach from 20m with slight rel. velocity
+
+% --- LVLH CALCULATIONS ---
+% define maneuver parameters
+downrange = .02; %[km]
+vc = -downrange/OPS_orbit.P; %[km/s]
+dt = OPS_orbit.P; %[s]
+
+[t_man5, out_man5] = Vbar(downrange, vc, OPS_orbit.P, dt);
+% assign outputs
+man5_R = out_man5(:,1:3);
+
 %% ===== RESULTS =====
 
 disp("===== RESULTS =====")
@@ -157,6 +166,10 @@ disp("===== RESULTS =====")
 % **uncomment to plot**
 
 % --- LVLH PLOTS ---
+% assign positions
+
+% call plots
+
 
 % ====== MANEUVERS ======
 % == maneuver 1 spotlight ==
@@ -170,14 +183,15 @@ m(4) = plot(hold1_R(:,2), hold1_R(:,1), 'k');
 m(5) = plot(man2_R(:,2), man2_R(:,1), 'k');
 m(6) = plot(man3_R(:,2), man3_R(:,1), 'k');
 m(7) = plot(man4_R(:,2), man4_R(:,1), 'k');
-m(8) = scatter(0, 0, 'k', 'filled'); % Target
+m(8) = plot(man5_R(:,2), man5_R(:,1), 'k');
+m(9) = scatter(0, 0, 'k', 'filled'); % Target
 xlim([-45 105])
 ylim([-22 22])
 grid minor
 title('Maneuver 1: Hop Trajectory -- LVLH')
 xlabel('Downrange -- Rbar [km]')
 ylabel('Altitude -- Vbar [km]')
-legend([m(1) m(2) m(3) m(8)], 'Maneuver 1 Trajectory', 'Start', ...+
+legend([m(1) m(2) m(3) m(9)], 'Maneuver 1 Trajectory', 'Start', ...+
     'End', 'Target Position', 'Location', 'Southeast')
 %}
 
@@ -192,40 +206,101 @@ m(4) = plot(hold1_R(:,2), hold1_R(:,1), 'k');
 m(5) = plot(man1_R(:,2), man1_R(:,1), 'k');
 m(6) = plot(man3_R(:,2), man3_R(:,1), 'k');
 m(7) = plot(man4_R(:,2), man4_R(:,1), 'k');
-m(8) = scatter(0, 0, 'k', 'filled'); % Target
+m(8) = plot(man5_R(:,2), man5_R(:,1), 'k');
+m(9) = scatter(0, 0, 'k', 'filled'); % Target
 xlim([-45 105])
 ylim([-22 22])
 grid minor
 title('Maneuver 2: Hop Trajectory -- LVLH')
 xlabel('Downrange -- Rbar [km]')
 ylabel('Altitude -- Vbar [km]')
-legend([m(1) m(2) m(3) m(8)], 'Maneuver 2 Trajectory', 'Start', ...+
+legend([m(1) m(2) m(3) m(9)], 'Maneuver 2 Trajectory', 'Start', ...+
     'End', 'Target Position', 'Location', 'Southeast')
 %}
 
 % == maneuver 3 spotlight ==
 %{
 figure()
+m(1) = plot(man3_R(:,2), man3_R(:,1), 'r'); % spotlight maneuver plot
+hold on
+m(2) = plot(man3_R(1,2), man3_R(1,1), '*', 'Color', 'm'); % maneuver start
+m(3) = plot(man3_R(end,2), man3_R(end,1), '*', 'Color', 'b'); % maneuver end
+m(4) = plot(man2_R(:,2), man2_R(:,1), 'k');
+m(5) = plot(man4_R(:,2), man4_R(:,1), 'k');
+m(6) = plot(man5_R(:,2), man5_R(:,1), 'k');
+m(7) = scatter(0, 0, 'k', 'filled'); % Target
+xlim([-.2 1.1])
+ylim([-.2 .2])
+grid minor
+title('Maneuver 3: Hop Trajectory -- LVLH')
+xlabel('Downrange -- Rbar [km]')
+ylabel('Altitude -- Vbar [km]')
+legend([m(1) m(2) m(3) m(7)], 'Maneuver 3 Trajectory', 'Start', ...+
+    'End', 'Target Position', 'Location', 'Southeast')
 %}
 
 % == maneuver 4 spotlight ==
 %{
 figure()
-plot(man4_R(:,2), man4_R(:,1))
+m(1) = plot(man4_R(:,2), man4_R(:,1), 'r'); % spotlight maneuver plot
+hold on
+m(2) = plot(man4_R(1,2), man4_R(1,1), '*', 'Color', 'm'); % maneuver start
+m(3) = plot(man4_R(end,2), man4_R(end,1), '*', 'Color', 'b'); % maneuver end
+m(4) = plot(man2_R(:,2), man2_R(:,1), 'k');
+m(5) = plot(man3_R(:,2), man3_R(:,1), 'k');
+m(6) = plot(man5_R(:,2), man5_R(:,1), 'k');
+m(7) = scatter(0, 0, 'k', 'filled'); % Target
+xlim([-.2 1.1])
+ylim([-.2 .2])
+grid minor
+title('Maneuver 4: Hop Trajectory -- LVLH')
+xlabel('Downrange -- Rbar [km]')
+ylabel('Altitude -- Vbar [km]')
+legend([m(1) m(2) m(3) m(7)], 'Maneuver 4 Trajectory', 'Start', ...+
+    'End', 'Target Position', 'Location', 'Southeast')
 %}
 
-% == combined maneuvers ==
+% == maneuver 5 spotlight ==
 %{
 figure()
-plot(man1_R(:,2), man1_R(:,1))
+% convert km to m
+man5_R = man5_R.*1000;
+man4_R = man4_R.*1000;
+m(1) = plot(man5_R(:,2), man5_R(:,1), 'r'); % spotlight maneuver plot
 hold on
-plot(hold1_R(:,2), hold1_R(:,1))
-plot(man2_R(:,2), man2_R(:,1))
-plot(man3_R(:,2), man3_R(:,1))
-plot(man4_R(:,2), man4_R(:,1))
-xlim([-45 105])
-ylim([-20 20])
+m(2) = plot(man5_R(1,2), man5_R(1,1), '*', 'Color', 'm'); % maneuver start
+m(3) = plot(man5_R(end,2), man5_R(end,1), '*', 'Color', 'b'); % maneuver end
+m(4) = plot(man4_R(:,2), man4_R(:,1), 'k');
+m(5) = scatter(0, 0, 'k', 'filled'); % Target
+xlim([-10 30])
+ylim([-10 10])
 grid minor
+title('Maneuver 5: Vbar Approach -- LVLH')
+xlabel('Downrange -- Rbar [m]')
+ylabel('Altitude -- Vbar [m]')
+legend([m(1) m(2) m(3) m(5)], 'Maneuver 5 Trajectory', 'Start', ...+
+    'End', 'Target Position', 'Location', 'Southwest')
+%}
+
+% == combined maneuvers no spotlight ==
+%{
+figure()
+m(1) = plot(man1_R(:,2), man1_R(:,1), 'r'); % maneuver 1
+hold on
+m(2) = plot(hold1_R(:,2), hold1_R(:,1)); % hold 1
+m(3) = plot(man2_R(:,2), man2_R(:,1)); % maneuver 2
+m(4) = plot(man3_R(:,2), man3_R(:,1)); % maneuver 3
+m(5) = plot(man4_R(:,2), man4_R(:,1)); % maneuver 4
+m(6) = plot(man5_R(:,2), man5_R(:,1)); % maneuver 5
+m(7) = scatter(0, 0, 'k', 'filled'); % Target
+xlim([-45 105])
+ylim([-22 22])
+grid minor
+title('Approach Profile -- LVLH')
+xlabel('Downrange -- Rbar [km]')
+ylabel('Altitude -- Vbar [km]')
+legend([m(1) m(2) m(3) m(3) m(4) m(5) m(6) m(7)], 'Man. 1', 'Hold 1', ...+
+    'Man. 2', 'Man. 3', 'Man. 4', 'Man. 5', 'Target', 'Location', 'Southeast')
 %}
 
 
@@ -245,24 +320,11 @@ m(8) = scatter(0, 0, 'k', 'filled'); % Target
 xlim([-45 105])
 ylim([-22 22])
 grid minor
-title('Maneuver 1: Hop Trajectory -- LVLH')
+title('Hold 1: Football Trajectory -- LVLH')
 xlabel('Downrange -- Rbar [km]')
 ylabel('Altitude -- Vbar [km]')
-legend([m(1) m(2) m(3) m(8)], 'Maneuver 1 Trajectory', 'Start', ...+
+legend([m(1) m(2) m(3) m(8)], 'Hold 1 Trajectory', 'Start', ...+
     'End', 'Target Position', 'Location', 'Southeast')
 %}
 
-%{
-% == hold 2 ==
-
-%}
-
-%{
-% == hold 3 ==
-
-%}
-
-%{
-% == hold 4 ==
-
-%}
+% holds 2, 3, do not require plots
