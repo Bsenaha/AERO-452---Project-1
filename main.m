@@ -158,6 +158,7 @@ disp("===== RESULTS =====")
 
 % --- LVLH PLOTS ---
 
+% ====== MANEUVERS ======
 % == maneuver 1 spotlight ==
 %{
 figure()
@@ -207,14 +208,14 @@ legend([m(1) m(2) m(3) m(8)], 'Maneuver 2 Trajectory', 'Start', ...+
 figure()
 %}
 
+% == maneuver 4 spotlight ==
 %{
-% == maneuver 4 ==
 figure()
 plot(man4_R(:,2), man4_R(:,1))
 %}
 
+% == combined maneuvers ==
 %{
-% == maneuvers combined (and football) ==
 figure()
 plot(man1_R(:,2), man1_R(:,1))
 hold on
@@ -227,6 +228,8 @@ ylim([-20 20])
 grid minor
 %}
 
+
+% ====== HOLDS ======
 % == hold 1 spotlight ==
 %{
 figure()
