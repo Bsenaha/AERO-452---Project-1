@@ -1,5 +1,5 @@
 % Football Maneuver
-function [t, deltav_x, out] = Football(downrange, P, plot_0or1)
+function [t, deltav_x, out] = Football(downrange, P)
 % INPUT:
 % downrange = chaser distance from target (positive downrange = in front)
 % [km]
@@ -24,13 +24,3 @@ state0 = [R_0; V_0];     % downrange in y, delta v in x
 % call circular propogation
 options = odeset('RelTol',1e-8,'AbsTol',1e-8);
 [t, out] = ode45(@circEOM, [0 P], state0, options, n);
-
-% plot
-if plot_0or1 == 1
-    figure() % plots relative velocity over time
-    dv = vecnorm(out(:, 4:6)', 3);
-    plot(t, dv)
-
-    figure() % LVLH position plot
-    plot(out(:,2), out(:,1))
-end

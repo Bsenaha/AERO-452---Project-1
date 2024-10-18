@@ -45,38 +45,53 @@ disp(" ")
 
 disp("===== DEFINING STATES =====")
 
-
 disp(" ")
 %% ===== MANEUVER 1 =====
 
 disp("===== MANEUVER 1 =====")
-% ** describe maneuver 
-% 100km to 40km hop
+% ** Vbar Hop from 100km to 40km downrange
 
-% LVLH CALCULATIONS
-% define hop parameters
-downrange = 100; 
-y = -60;
+% --- LVLH CALCULATIONS ---
+% define maneuver parameters
+downrange = 100; %[km]
+y = -60; %[km]
 
 % call hop function
-[t1, deltav_y1, h1, out1] = hop(downrange, y, OPS_orbit.P);
-
+[t_man1, deltav_man1, h_man1, out_man1] = hop(downrange, y, OPS_orbit.P);
 % assign outputs
-man1_R = out1(:,1:3); %[km]
+man1_R = out_man1(:,1:3); %[km]
 
 disp(" ")
 %% ===== HOLD 1 =====
 
 disp("===== HOLD 1 =====")
+% ** Football maneuver into 40kmx20km relative orbit and hold
 
+% --- LVLH CALCULATIONS ---
 % define hold parameters
+downrange = man1_R(end, 2); %[km]
+
+% call hold function
+[t_hold1, deltav_hold1, out_hold1] = Football(downrange, OPS_orbit.P);
+% assign outputs
+hold1_R = out_hold1(:,1:3);
+hold1_V = out_hold1(:, 4:6);
 
 disp(" ")
 %% ===== MANEUVER 2 =====
 
 disp("===== MANEUVER 2 =====")
+% ** Vbar Hop from 40km to 1km downrange
 
-% * Burn from current orbit to Target orbit @ 1km rel. distance ahead of target *
+% --- LVLH CALCULATIONS ---
+% define maneuver parameters
+downrange = 40; %[km]
+y = -39; %[km]
+
+% call hop function
+[t_man2, deltav_man2, h_man2, out_man2] = hop(downrange, y, OPS_orbit.P);
+% assign outputs
+man2_R = out_man2(:,1:3); %[km]
 
 disp(" ")
 %% ===== HOLD 2 =====
@@ -89,8 +104,17 @@ disp(" ")
 %% ===== MANEUVER 3 =====
 
 disp("===== MANEUVER 3 =====")
+% ** Vbar Hop from 1km to 300m downrange
 
-% * Vbar Hop Burn from 1km rel. distance to 300m rel. distance *
+% --- LVLH CALCULATIONS ---
+% define maneuver parameters
+downrange = 1; %[km]
+y = -.7; %[km]
+
+% call hop function
+[t_man3, deltav_man3, h_man3, out_man3] = hop(downrange, y, OPS_orbit.P);
+% assign outputs
+man3_R = out_man3(:,1:3); %[km]
 
 disp(" ")
 %% ===== HOLD 3 =====
@@ -103,17 +127,94 @@ disp(" ")
 %% ===== MANEUVER 4 =====
 
 disp("===== MANEUVER 4 =====")
+% ** Vbar Hop from 1km to 20m downrange
 
-% * Vbar Hop Burn from 300m rel. distance to 20m rel. distance *
+% --- LVLH CALCULATIONS ---
+% define maneuver parameters
+downrange = .3; %[km]
+y = -0.28; %[km]
+
+% call hop function
+[t4, deltav_y4, h4, out4] = hop(downrange, y, OPS_orbit.P);
+% assign outputs
+man4_R = out4(:,1:3); %[km]
 
 disp(" ")
 %% ===== HOLD 4 (FINAL HOLD) =====
 
 disp("===== HOLD 4 =====")
 
-% * Hold @ 20m rel. distance *
+% ** Vbar approach with slight rel. velocity
 
 disp(" ")
 %% ===== RESULTS =====
 
 disp("===== RESULTS =====")
+
+%% PLOTS
+% man(num)_R = maneuver states
+% 
+
+% --- LVLH PLOTS ---
+%{
+% == maneuver 1 ==
+figure()
+plot(man1_R(:,2), man1_R(:,1))
+%}
+
+%{
+% == maneuver 2 ==
+figure()
+plot(man2_R(:,2), man2_R(:,1))
+%}
+
+%{
+% == maneuver 3 ==
+figure()
+plot(man3_R(:,2), man3_R(:,1))
+%}
+
+%{
+% == maneuver 4 ==
+figure()
+plot(man4_R(:,2), man4_R(:,1))
+%}
+
+%{
+% == maneuvers combined (and football) ==
+figure()
+plot(man1_R(:,2), man1_R(:,1))
+hold on
+plot(hold1_R(:,2), hold1_R(:,1))
+plot(man2_R(:,2), man2_R(:,1))
+plot(man3_R(:,2), man3_R(:,1))
+plot(man4_R(:,2), man4_R(:,1))
+xlim([-45 105])
+ylim([-20 20])
+grid minor
+%}
+
+%{
+% == hold 1 ==
+figure() % LVLH position plot
+plot(hold1_R(:,2), hold1_R(:,1))
+
+figure() % plots relative velocity over time
+dv = vecnorm(hold1_V(:, 1:3)', 3);
+plot(t_hold1, dv)
+%}
+
+%{
+% == hold 2 ==
+
+%}
+
+%{
+% == hold 3 ==
+
+%}
+
+%{
+% == hold 4 ==
+
+%}
