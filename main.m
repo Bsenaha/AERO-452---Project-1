@@ -153,25 +153,58 @@ disp("===== RESULTS =====")
 
 %% PLOTS
 % man(num)_R = maneuver states
-% 
+% hold(num)_R = hold states
+% **uncomment to plot**
 
 % --- LVLH PLOTS ---
+
+% == maneuver 1 spotlight ==
 %{
-% == maneuver 1 ==
 figure()
-plot(man1_R(:,2), man1_R(:,1))
+m(1) = plot(man1_R(:,2), man1_R(:,1), 'r'); % spotlight maneuver plot
+hold on
+m(2) = plot(man1_R(1,2), man1_R(1,1), '*', 'Color', 'm'); % maneuver start
+m(3) = plot(man1_R(end,2), man1_R(end,1), '*', 'Color', 'b'); % maneuver end
+m(4) = plot(hold1_R(:,2), hold1_R(:,1), 'k');
+m(5) = plot(man2_R(:,2), man2_R(:,1), 'k');
+m(6) = plot(man3_R(:,2), man3_R(:,1), 'k');
+m(7) = plot(man4_R(:,2), man4_R(:,1), 'k');
+m(8) = scatter(0, 0, 'k', 'filled'); % Target
+xlim([-45 105])
+ylim([-22 22])
+grid minor
+title('Maneuver 1: Hop Trajectory -- LVLH')
+xlabel('Downrange -- Rbar [km]')
+ylabel('Altitude -- Vbar [km]')
+legend([m(1) m(2) m(3) m(8)], 'Maneuver 1 Trajectory', 'Start', ...+
+    'End', 'Target Position', 'Location', 'Southeast')
 %}
 
+% == maneuver 2 spotlight ==
 %{
-% == maneuver 2 ==
 figure()
-plot(man2_R(:,2), man2_R(:,1))
+m(1) = plot(man2_R(:,2), man2_R(:,1), 'r'); % spotlight maneuver plot
+hold on
+m(2) = plot(man2_R(1,2), man2_R(1,1), '*', 'Color', 'm'); % maneuver start
+m(3) = plot(man2_R(end,2), man2_R(end,1), '*', 'Color', 'b'); % maneuver end
+m(4) = plot(hold1_R(:,2), hold1_R(:,1), 'k');
+m(5) = plot(man1_R(:,2), man1_R(:,1), 'k');
+m(6) = plot(man3_R(:,2), man3_R(:,1), 'k');
+m(7) = plot(man4_R(:,2), man4_R(:,1), 'k');
+m(8) = scatter(0, 0, 'k', 'filled'); % Target
+xlim([-45 105])
+ylim([-22 22])
+grid minor
+title('Maneuver 2: Hop Trajectory -- LVLH')
+xlabel('Downrange -- Rbar [km]')
+ylabel('Altitude -- Vbar [km]')
+legend([m(1) m(2) m(3) m(8)], 'Maneuver 2 Trajectory', 'Start', ...+
+    'End', 'Target Position', 'Location', 'Southeast')
 %}
 
+% == maneuver 3 spotlight ==
 %{
-% == maneuver 3 ==
 figure()
-plot(man3_R(:,2), man3_R(:,1))
 %}
 
 %{
@@ -194,14 +227,26 @@ ylim([-20 20])
 grid minor
 %}
 
+% == hold 1 spotlight ==
 %{
-% == hold 1 ==
-figure() % LVLH position plot
-plot(hold1_R(:,2), hold1_R(:,1))
-
-figure() % plots relative velocity over time
-dv = vecnorm(hold1_V(:, 1:3)', 3);
-plot(t_hold1, dv)
+figure()
+m(1) = plot(hold1_R(:,2), hold1_R(:,1), 'r'); % spotlight hold plot
+hold on
+m(2) = plot(hold1_R(1,2), hold1_R(1,1), '*', 'Color', 'm'); % hold start
+m(3) = plot(hold1_R(end,2), hold1_R(end,1), '*', 'Color', 'b'); % hold end
+m(4) = plot(man1_R(:,2), man1_R(:,1), 'k');
+m(5) = plot(man2_R(:,2), man2_R(:,1), 'k');
+m(6) = plot(man3_R(:,2), man3_R(:,1), 'k');
+m(7) = plot(man4_R(:,2), man4_R(:,1), 'k');
+m(8) = scatter(0, 0, 'k', 'filled'); % Target
+xlim([-45 105])
+ylim([-22 22])
+grid minor
+title('Maneuver 1: Hop Trajectory -- LVLH')
+xlabel('Downrange -- Rbar [km]')
+ylabel('Altitude -- Vbar [km]')
+legend([m(1) m(2) m(3) m(8)], 'Maneuver 1 Trajectory', 'Start', ...+
+    'End', 'Target Position', 'Location', 'Southeast')
 %}
 
 %{
