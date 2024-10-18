@@ -23,8 +23,8 @@ xlim([-45 105])
 ylim([-22 22])
 grid minor
 title('Maneuver 1: Hop Trajectory -- LVLH')
-xlabel('Downrange -- Rbar [km]')
-ylabel('Altitude -- Vbar [km]')
+xlabel('Downrange -- Vbar [km]')
+ylabel('Altitude -- Rbar [km]')
 legend([m(1) m(2) m(3) m(9)], 'Maneuver 1 Trajectory', 'Start', ...+
     'End', 'Target Position', 'Location', 'Southeast')
 
@@ -46,8 +46,8 @@ xlim([-45 105])
 ylim([-22 22])
 grid minor
 title('Maneuver 2: Hop Trajectory -- LVLH')
-xlabel('Downrange -- Rbar [km]')
-ylabel('Altitude -- Vbar [km]')
+xlabel('Downrange -- Vbar [km]')
+ylabel('Altitude -- Rbar [km]')
 legend([m(1) m(2) m(3) m(9)], 'Maneuver 2 Trajectory', 'Start', ...+
     'End', 'Target Position', 'Location', 'Southeast')
 
@@ -67,8 +67,8 @@ xlim([-.2 1.1])
 ylim([-.2 .2])
 grid minor
 title('Maneuver 3: Hop Trajectory -- LVLH')
-xlabel('Downrange -- Rbar [km]')
-ylabel('Altitude -- Vbar [km]')
+xlabel('Downrange -- Vbar [km]')
+ylabel('Altitude -- Rbar [km]')
 legend([m(1) m(2) m(3) m(7)], 'Maneuver 3 Trajectory', 'Start', ...+
     'End', 'Target Position', 'Location', 'Southeast')
 
@@ -88,8 +88,8 @@ xlim([-.2 1.1])
 ylim([-.2 .2])
 grid minor
 title('Maneuver 4: Hop Trajectory -- LVLH')
-xlabel('Downrange -- Rbar [km]')
-ylabel('Altitude -- Vbar [km]')
+xlabel('Downrange -- Vbar [km]')
+ylabel('Altitude -- Rbar [km]')
 legend([m(1) m(2) m(3) m(7)], 'Maneuver 4 Trajectory', 'Start', ...+
     'End', 'Target Position', 'Location', 'Southeast')
 
@@ -110,8 +110,8 @@ xlim([-10 30])
 ylim([-10 10])
 grid minor
 title('Maneuver 5: Vbar Approach -- LVLH')
-xlabel('Downrange -- Rbar [m]')
-ylabel('Altitude -- Vbar [m]')
+xlabel('Downrange -- Vbar [m]')
+ylabel('Altitude -- Rbar [m]')
 legend([m(1) m(2) m(3) m(5)], 'Maneuver 5 Trajectory', 'Start', ...+
     'End', 'Target Position', 'Location', 'Southwest')
 % convert back
@@ -119,25 +119,25 @@ man5_R = man5_R./1000;
 man4_R = man4_R./1000;
 
 
-% == combined maneuvers no spotlight ==
+% == Entire Approach Profile ==
 %{
 figure()
-m(1) = plot(man1_R(:,2), man1_R(:,1), 'r'); % maneuver 1
+m(1) = plot(man1_R(:,2), man1_R(:,1), 'k'); % maneuver 1
 hold on
-m(2) = plot(hold1_R(:,2), hold1_R(:,1)); % hold 1
-m(3) = plot(man2_R(:,2), man2_R(:,1)); % maneuver 2
-m(4) = plot(man3_R(:,2), man3_R(:,1)); % maneuver 3
-m(5) = plot(man4_R(:,2), man4_R(:,1)); % maneuver 4
-m(6) = plot(man5_R(:,2), man5_R(:,1)); % maneuver 5
-m(7) = scatter(0, 0, 'k', 'filled'); % Target
+m(2) = plot(man1_R(1,2), man1_R(1,1), '*', 'Color', 'm'); % mission start
+m(3) = plot(hold1_R(:,2), hold1_R(:,1), 'k'); % hold 1
+m(4) = plot(man2_R(:,2), man2_R(:,1), 'k'); % maneuver 2
+m(5) = plot(man3_R(:,2), man3_R(:,1), 'k'); % maneuver 3
+m(6) = plot(man4_R(:,2), man4_R(:,1), 'k'); % maneuver 4
+m(7) = plot(man5_R(:,2), man5_R(:,1), 'k'); % maneuver 5
+m(8) = scatter(0, 0, 'k', 'filled'); % Target
 xlim([-45 105])
 ylim([-22 22])
 grid minor
 title('Approach Profile -- LVLH')
-xlabel('Downrange -- Rbar [km]')
-ylabel('Altitude -- Vbar [km]')
-legend([m(1) m(2) m(3) m(3) m(4) m(5) m(6) m(7)], 'Man. 1', 'Hold 1', ...+
-    'Man. 2', 'Man. 3', 'Man. 4', 'Man. 5', 'Target', 'Location', 'Southeast')
+xlabel('Downrange -- Vbar [km]')
+ylabel('Altitude -- Rbar [km]')
+legend([m(2) m(8)], 'Mission Start', 'Target', 'Location', 'Southeast')
 %}
 
 
@@ -159,8 +159,8 @@ xlim([-45 105])
 ylim([-22 22])
 grid minor
 title('Hold 1: Football Trajectory -- LVLH')
-xlabel('Downrange -- Rbar [km]')
-ylabel('Altitude -- Vbar [km]')
+xlabel('Downrange -- Vbar [km]')
+ylabel('Altitude -- Rbar [km]')
 legend([m(1) m(2) m(3) m(9)], 'Hold 1 Trajectory', 'Start', ...+
     'End', 'Target Position', 'Location', 'Southeast')
 
