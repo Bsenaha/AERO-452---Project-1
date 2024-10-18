@@ -54,7 +54,8 @@ CABS_orbit = OPS_orbit; % clone target orbit to chaser
 % Solving for Chaser initial position (100 km) on lower altitude orbit:
 rho_missionstart = 100; %[km]
 % reassign chaser rp and true anomaly
-altitude_difference = 15; % altitude difference between target and chaser orbits [km]
+altitude_difference = 0; %[km]
+
 CABS_orbit.rpMag = OPS_orbit.rpMag - altitude_difference; % periapse radius of chaser [km]
 [CABS.R_peri, CABS_orbit.theta] = PositionSolver(OPS_orbit.theta, OPS_orbit.rpMag, CABS_orbit.rpMag, OPS_orbit.ecc, mu_Earth, rho_missionstart); % perifocal
 
@@ -109,7 +110,7 @@ disp("===== MANEUVER 1 =====")
 % Use UV to find maneuver duration
 % define necessary parameters to call UV solver
 
-rho_f = 35; % rho at end of maneuver [km]
+rho_f = 40; % rho at end of maneuver [km]
 rho_0 = norm(rho_LVLH); % initial/current rho [km]
 
 % call rho comparison to get states between rho values
@@ -150,7 +151,7 @@ disp("===== HOLD 1 =====")
 % * Hold/Cruise from 35km to 25km *
 % Use UV to find maneuver duration
 
-rho_f = 25; % rho at end of maneuver [km]
+rho_f = 20; % rho at end of maneuver [km]
 rho_0 = norm(rho_ECI); %**change to rho_LVLH once calculated**
 
 % call rho comparison to get states between rho values

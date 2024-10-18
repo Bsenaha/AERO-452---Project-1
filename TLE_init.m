@@ -17,7 +17,8 @@ TLEstruct.epoch = TLE.Epoch; % Epoch date
 TLEstruct.MM = TLE.MeanMotion * 240; % mean motion [rev/day]
 TLEstruct.inc = deg2rad(TLE.Inclination); % inclination [rad]
 TLEstruct.RAAN = deg2rad(TLE.RightAscensionOfAscendingNode); % RAAN [rad]
-TLEstruct.ecc = TLE.Eccentricity; % eccentricity
+%TLEstruct.ecc = TLE.Eccentricity; % eccentricity
+TLEstruct.ecc = 1e-8; % HARD CODED eccentricity for PROJECT 1
 TLEstruct.omega = deg2rad(TLE.ArgumentOfPeriapsis); % argument of periapse [rad]
 TLEstruct.MA = deg2rad(TLE.MeanAnomaly); % mean anomaly [rad]
 
