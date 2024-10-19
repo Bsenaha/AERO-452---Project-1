@@ -1,4 +1,4 @@
-function [C_ECI2LVLH] = ECI2LVLH(R, V)
+function [C_LVLH2ECI] = LVLH2ECI(R, V)
 % ECI2LVLH 
 
 % INPUT:
@@ -20,3 +20,5 @@ j = cross(k, i);
 C_ECI2LVLH = [i(1), i(2), i(3);
               j(1), j(2), j(3);
               k(1), k(2), k(3)];
+
+C_LVLH2ECI = C_ECI2LVLH';

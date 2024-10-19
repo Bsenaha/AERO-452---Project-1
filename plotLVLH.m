@@ -127,12 +127,12 @@ hold5_R = hold5_R./1000;
 
 
 % == Entire Approach Profile ==
-%{
+
 figure()
 m(1) = plot(man1_R(:,2), man1_R(:,1), 'k'); % maneuver 1
 hold on
 m(2) = plot(man1_R(1,2), man1_R(1,1), '*', 'Color', 'm'); % mission start
-m(3) = plot(hold1_R(:,2), hold1_R(:,1), 'k'); % hold 1
+m(3) = plot(hold2_R(:,2), hold2_R(:,1), 'k'); % hold 1
 m(4) = plot(man2_R(:,2), man2_R(:,1), 'k'); % maneuver 2
 m(5) = plot(man3_R(:,2), man3_R(:,1), 'k'); % maneuver 3
 m(6) = plot(man4_R(:,2), man4_R(:,1), 'k'); % maneuver 4
@@ -146,7 +146,7 @@ title('Approach Profile -- LVLH')
 xlabel('Downrange -- Vbar [km]')
 ylabel('Altitude -- Rbar [km]')
 legend([m(2) m(9)], 'Mission Start', 'Target', 'Location', 'Southeast')
-%}
+
 
 
 % ====== HOLDS ======

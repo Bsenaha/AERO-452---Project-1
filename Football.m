@@ -1,5 +1,5 @@
 % Football Maneuver
-function [t, deltav_x, out] = Football(downrange, P)
+function [t, deltav_LVLH, out] = Football(downrange, P)
 % INPUT:
 % downrange = chaser distance from target (positive downrange = in front)
 % [km]
@@ -19,6 +19,7 @@ deltav_x = downrange * n / 2; % calculate necessary delta v
 % define initial state
 R_0 = [0; downrange; 0]; % Initial LVLH coords [km]
 V_0 = [deltav_x; 0; 0];  % Initial LVLH rel. velocity [km/s]
+deltav_LVLH = V_0; % applied delta V in LVLh [km/s]
 state0 = [R_0; V_0];     % downrange in y, delta v in x
 
 % call circular propogation

@@ -30,7 +30,7 @@ rho_difference = norm(rho_desired) - norm(rho); % still perifocal [km]
 tol = 1e-6;
 while rho_difference > tol
     % decrease chaser theta slightly
-    theta = theta - 1e-8;
+    theta = theta + 1e-8;
     theta_Chaser = theta; % true anomaly of chaser on same orbit [rad]
 
     % calculate new chaser position with new theta
