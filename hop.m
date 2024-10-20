@@ -8,7 +8,7 @@ function [t, deltav_LVLH, h, out] = hop(downrange, y, P)
 
 % OUTPUT:
 % t = time [s]
-% deltav_y = delta v required to get onto football maneuver (must be
+% deltav_y = delta v required to get onto hop maneuver (must be
 % doubled for calculating getting off) [km/s]
 % h = height of hop [km]
 
