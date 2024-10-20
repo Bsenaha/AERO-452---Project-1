@@ -48,9 +48,20 @@ C_peri2ECI = peri2ECI(LES_orbit.omega, LES_orbit.inc, LES_orbit.RAAN);
 LES.R_ECI = C_peri2ECI * LES.R_peri; % ECI [km]
 LES.V_ECI = C_peri2ECI * LES.V_peri; % ECI [km/s]
 
+% Propogate target to Mission Launch Date (Nov. 1st 2024)
+datetime_missionstart = datetime('2024-11-01 00:00:00'); 
+t2missionstart = etime(datevec(datetime_missionstart), datevec(LES_orbit.epoch));
+
+y0 = [LES.R_ECI; LES.V_ECI];
+[~, LES.R_ECI, LES.V_ECI, ~, ~] = propogate(t2missionstart, y0, options, mu_Earth);
+
 % Defining Chaser COES
 % All are the same except rp and theta
 CABS_orbit = LES_orbit; % clone target orbit to chaser
+
+% Recalculate new COEs based new R and Vs
+COEs_temp = rv2COEs(LES.R_ECI, LES.V_ECI);
+LES_orbit.theta = COEs_temp.TrueAnomaly; % only COE that matters after prop
 
 % Solving for Chaser initial position on same orbit (100 km in front):
 rho_missionstart = 100; %[km]
@@ -63,8 +74,10 @@ disp("     ===     DEFINING STATES     ===     ")
 
 % --- ECI CALCULATIONS ---
 % Redefine Target RV
-LES.R_ECI = LES.R_ECI;
-LES.V_ECI = LES.V_ECI;
+[LES.R_peri, LES.V_peri] = COES2RV(LES_orbit.theta, LES_orbit.rpMag, LES_orbit.ecc, mu_Earth);
+% Convert to ECI
+LES.R_ECI = C_peri2ECI * LES.R_peri;
+LES.V_ECI = C_peri2ECI * LES.V_peri;
 
 % Define Chaser RV based on previously found rp and theta
 [CABS.R_peri, CABS.V_peri] = COES2RV(CABS_orbit.theta, CABS_orbit.rpMag, CABS_orbit.ecc, mu_Earth);
@@ -197,8 +210,27 @@ y0_man1_LES = [LES.R_ECI; LES.V_ECI];
 y0_man1_CABS = [CABS.R_ECI; CABS.V_ECI];
 [~, CABS.R_ECI, CABS.V_ECI, man1_R_CABS, man1_V_CABS] = propogate(dt_man1, y0_man1_CABS, options, mu_Earth);
 
-% --- PLOT ---
+% apply second burn to reset chaser V
+CABS.V_ECI = CABS.V_ECI - deltav_man1_ECI;
 
+% --- PLOT ---
+%{
+figure()
+r(1) = plot3(LES.R_ECI(1), LES.R_ECI(2), LES.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+hold on
+r(2) = plot3(man1_R_LES(:, 1), man1_R_LES(:, 2), man1_R_LES(:, 3), '-.', 'Color', 'r'); % target orbit
+r(3) = plot3(CABS.R_ECI(1), CABS.R_ECI(2), CABS.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(4) = plot3(man1_R_CABS(:,1), man1_R_CABS(:,2), man1_R_CABS(:,3), '-.', 'Color', 'b'); % chaser orbit
+run('plotEarth');
+axis equal
+xlabel('X ECI [km]')
+ylabel('Y ECI [km]')
+zlabel('Z ECI [km]')
+title('Maneuver 1: Hop Trajectory -- ECI')
+zlim([-2e4 2e4])
+legend('LES Position', 'LES Orbit', 'CABS Position', 'CABS Orbit')
+grid on
+%}
 
 % --- TIME CALCULATIONS ---
 [t_mission] = missiontime(t_mission, dt_man1);
@@ -213,7 +245,7 @@ disp("     ===     HOLD 2     ===     ")
 downrange = man1_R(end, 2); %[km]
 
 % call hold function
-[t_hold2, deltav_hold2, out_hold2] = Football(downrange, LES_orbit.P);
+[t_hold2, deltav_hold2, out_hold2] = Football(downrange, CABS_orbit.P);
 % assign outputs
 hold2_R = out_hold2(:, 1:3);
 hold2_V = out_hold2(:, 4:6);
@@ -228,30 +260,41 @@ deltav_hold2_ECI = C_LVLH2ECI * deltav_hold2; %[km/s]
 CABS.V_ECI = CABS.V_ECI + deltav_hold2_ECI; %[km/s]
 
 % propogate football
-dt_hold2 = t_hold2(end); % maneuver 2 duration [s]v
+dt_hold2 = t_hold2(end); % maneuver 2 duration [s]
 % propogate target
 y0_hold2_LES = [LES.R_ECI; LES.V_ECI];
 [~, LES.R_ECI, LES.V_ECI, hold2on_R_LES, hold2on_V_LES] = propogate(dt_hold2, y0_hold2_LES, options, mu_Earth);
 
+% at 1/4, 1/2, 3/4 period for plotting
+[~, LES_14, ~, ~, ~] = propogate(dt_hold2*(1/4), y0_hold2_LES, options, mu_Earth);
+[~, LES_12, ~, ~, ~] = propogate(dt_hold2*(1/2), y0_hold2_LES, options, mu_Earth);
+[~, LES_34, ~, ~, ~] = propogate(dt_hold2*(3/4), y0_hold2_LES, options, mu_Earth);
+
 % propogate chaser
 y0_hold2_CABS = [CABS.R_ECI; CABS.V_ECI];
 [~, CABS.R_ECI, CABS.V_ECI, hold2on_R_CABS, hold2on_V_CABS] = propogate(dt_hold2, y0_hold2_CABS, options, mu_Earth);
+
+% at 1/4, 1/2, 3/4 period for plotting
+[~, CABS_14, ~, ~, ~] = propogate(dt_hold2*(1/4), y0_hold2_CABS, options, mu_Earth);
+[~, CABS_12, ~, ~, ~] = propogate(dt_hold2*(1/2), y0_hold2_CABS, options, mu_Earth);
+[~, CABS_34, ~, ~, ~] = propogate(dt_hold2*(3/4), y0_hold2_CABS, options, mu_Earth);
 
 % define velocity to get off hold
 deltav_hold2off_ECI = -deltav_hold2_ECI; %[km/s]
 CABS.V_ECI = CABS.V_ECI + deltav_hold2off_ECI; %[km/s]
 
 % find remaining hold time
+disp(dt_24 - dt_hold2)
 dt_remain = dt_24 - dt_hold2; % remaining hold time [s]
 
 % propogate remaining hold time
 % propogate target
 y0_hold2_LES = [LES.R_ECI; LES.V_ECI];
-[~, LES.R_ECI, LES.V_ECI, hold2off_R_LES, hold2off_V_LES] = propogate(dt_hold2, y0_hold2_LES, options, mu_Earth);
+[~, LES.R_ECI, LES.V_ECI, hold2off_R_LES, hold2off_V_LES] = propogate(dt_remain, y0_hold2_LES, options, mu_Earth);
 
 % propogate chaser
 y0_hold2_CABS = [CABS.R_ECI; CABS.V_ECI];
-[~, CABS.R_ECI, CABS.V_ECI, hold2off_R_CABS, hold2off_V_CABS] = propogate(dt_hold2, y0_hold2_CABS, options, mu_Earth);
+[~, CABS.R_ECI, CABS.V_ECI, hold2off_R_CABS, hold2off_V_CABS] = propogate(dt_remain, y0_hold2_CABS, options, mu_Earth);
 
 % disp delta v
 deltav_tot = deltav_tot + 2*norm(deltav_hold2);
@@ -268,6 +311,29 @@ disp("Total Manuever delta v [m/s]: " + 1000*norm(deltav_hold2off_ECI))
 disp("Total Mission delta v Expenditure [m/s]: " + 1000*deltav_tot)
 
 % --- PLOT ---
+%{
+figure()
+r(1) = plot3(LES.R_ECI(1), LES.R_ECI(2), LES.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+hold on
+r(2) = plot3(hold2on_R_LES(:, 1), hold2on_R_LES(:, 2), hold2on_R_LES(:, 3), '-.', 'Color', 'r'); % target orbit
+r(3) = plot3(CABS.R_ECI(1), CABS.R_ECI(2), CABS.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(4) = plot3(hold2on_R_CABS(:, 1), hold2on_R_CABS(:, 2), hold2on_R_CABS(:, 3), '-.', 'Color', 'b'); % chaser orbit
+r(5) = plot3(LES_14(1), LES_14(2), LES_14(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+r(6) = plot3(CABS_14(1), CABS_14(2), CABS_14(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(7) = plot3(LES_12(1), LES_12(2), LES_12(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+r(8) = plot3(CABS_12(1), CABS_12(2), CABS_12(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(9) = plot3(LES_34(1), LES_34(2), LES_34(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+r(10) = plot3(CABS_34(1), CABS_34(2), CABS_34(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+run('plotEarth');
+axis equal
+xlabel('X ECI [km]')
+ylabel('Y ECI [km]')
+zlabel('Z ECI [km]')
+title('Hold 2: Football Trajectory -- ECI')
+zlim([-2e4 2e4])
+legend('LES Position', 'LES Orbit', 'CABS Position', 'CABS Orbit')
+grid on
+%}
 
 % update time
 [t_mission] = missiontime(t_mission, dt_hold2 + dt_remain);
@@ -314,6 +380,28 @@ y0_man2_LES = [LES.R_ECI; LES.V_ECI];
 y0_man2_CABS = [CABS.R_ECI; CABS.V_ECI];
 [~, CABS.R_ECI, CABS.V_ECI, man2_R_CABS, man2off_V_CABS] = propogate(dt_man2, y0_man2_CABS, options, mu_Earth);
 
+% --- PLOT --- 
+%{
+figure()
+r(1) = plot3(LES.R_ECI(1), LES.R_ECI(2), LES.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+hold on
+r(2) = plot3(man2_R_LES(:, 1), man2_R_LES(:, 2), man2_R_LES(:, 3), '-.', 'Color', 'r'); % target orbit
+r(3) = plot3(CABS.R_ECI(1), CABS.R_ECI(2), CABS.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(4) = plot3(man2_R_CABS(:,1), man2_R_CABS(:,2), man2_R_CABS(:,3), '-.', 'Color', 'b'); % chaser orbit
+run('plotEarth');
+axis equal
+xlabel('X ECI [km]')
+ylabel('Y ECI [km]')
+zlabel('Z ECI [km]')
+title('Maneuver 2: Hop Trajectory -- ECI')
+zlim([-2e4 2e4])
+legend('LES Position', 'LES Orbit', 'CABS Position', 'CABS Orbit')
+grid on
+%}
+
+% apply second burn to reset chaser V
+CABS.V_ECI = CABS.V_ECI - deltav_man1_ECI;
+
 % update time
 [t_mission] = missiontime(t_mission, dt_man2);
 disp("--------------------------------------------------------------------")
@@ -354,6 +442,10 @@ y0_hold3_LES = [LES.R_ECI; LES.V_ECI];
 % propogate chaser
 y0_hold3_CABS = [CABS.R_ECI; CABS.V_ECI];
 [~, CABS.R_ECI, CABS.V_ECI, hold3_R_CABS, hold3_V_CABS] = propogate(dt_hold3, y0_hold3_CABS, options, mu_Earth);
+disp(norm(CABS.R_ECI - LES.R_ECI))
+
+% --- PLOT ---
+% no plot needed
 
 % update time
 [t_mission] = missiontime(t_mission, dt_hold3);
@@ -383,11 +475,6 @@ C_LVLH2ECI = LVLH2ECI(LES.R_ECI, LES.V_ECI);
 deltav_man3_ECI = C_LVLH2ECI * deltav_man3; %[km/s]
 CABS.V_ECI = CABS.V_ECI + deltav_man3_ECI; %[km/s]
 
-% --- DELTA V CALCULATIONS ---
-% define velocity to get onto hold
-deltav_man3_ECI = C_LVLH2ECI * deltav_man3; %[km/s]
-CABS.V_ECI = CABS.V_ECI + deltav_man3_ECI; %[km/s]
-
 % disp delta v
 deltav_tot = deltav_tot + 2*norm(deltav_man3);
 disp("Maneuver delta v (ECI) [m/s]: ")
@@ -404,10 +491,31 @@ y0_man3_LES = [LES.R_ECI; LES.V_ECI];
 [~, LES.R_ECI, LES.V_ECI, man3_R_LES, man3_V_LES] = propogate(dt_man3, y0_man3_LES, options, mu_Earth);
 
 % propogate chaser
-y0_man3_CABS = [CABS.R_ECI; CABS.V_ECI];
-[~, CABS.R_ECI, CABS.V_ECI, man3_R_CABS, man3_V_CABS] = propogate(dt_man3, y0_man3_CABS, options, mu_Earth);
+CABS.V_ECI = LES.V_ECI;
+y0_man3_CABS = [LES.R_ECI; CABS.V_ECI];
+[~, CABS.R_ECI, CABS.V_ECI, man3_R_CABS, man3_V_CABS] = propogate(dt_man3 + .1025, y0_man3_CABS, options, mu_Earth);
 
 % --- PLOT ---
+%{
+figure()
+r(1) = plot3(LES.R_ECI(1), LES.R_ECI(2), LES.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+hold on
+r(2) = plot3(man3_R_LES(:, 1), man3_R_LES(:, 2), man3_R_LES(:, 3), '-.', 'Color', 'r'); % target orbit
+r(3) = plot3(CABS.R_ECI(1), CABS.R_ECI(2), CABS.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(4) = plot3(man3_R_CABS(:,1), man3_R_CABS(:,2), man3_R_CABS(:,3), '-.', 'Color', 'b'); % chaser orbit
+run('plotEarth');
+axis equal
+xlabel('X ECI [km]')
+ylabel('Y ECI [km]')
+zlabel('Z ECI [km]')
+title('Maneuver 3: Hop Trajectory -- ECI')
+zlim([-2e4 2e4])
+legend('LES Position', 'LES Orbit', 'CABS Position', 'CABS Orbit')
+grid on
+%}
+
+% update delta v
+CABS.V_ECI = CABS.V_ECI - deltav_man3_ECI;
 
 % update time
 dt_man3 = t_man3(end); % maneuver 3 duration [s]
@@ -458,7 +566,7 @@ disp("--------------------------------------------------------------------")
 
 disp("--------------------------------------------------------------------")
 disp("     ===     MANEUVER 4     ===     ")
-% ** Vbar Hop from 1km to 20m downrange
+% ** Vbar Hop from 300m to 20m downrange
 
 % --- LVLH CALCULATIONS ---
 % define maneuver parameters
@@ -492,11 +600,33 @@ dt_man4 = t_man4(end); % maneuver 4 duration [s]
 
 % propogate target
 y0_man4_LES = [LES.R_ECI; LES.V_ECI];
-[~, LES.R_ECI, LES.V_ECI, man4_R_LES, man4_V_LES] = propogate(dt_man4, y0_man2_LES, options, mu_Earth);
+[~, LES.R_ECI, LES.V_ECI, man4_R_LES, man4_V_LES] = propogate(dt_man4, y0_man4_LES, options, mu_Earth);
 
 % propogate chaser
-y0_man4_CABS = [CABS.R_ECI; CABS.V_ECI];
+y0_man4_CABS = [LES.R_ECI; CABS.V_ECI];
 [~, CABS.R_ECI, CABS.V_ECI, man4_R_CABS, man4_V_CABS] = propogate(dt_man4, y0_man4_CABS, options, mu_Earth);
+
+% --- PLOT ---
+
+figure()
+r(1) = plot3(LES.R_ECI(1), LES.R_ECI(2), LES.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+hold on
+r(2) = plot3(man4_R_LES(:, 1), man4_R_LES(:, 2), man4_R_LES(:, 3), '-.', 'Color', 'r'); % target orbit
+r(3) = plot3(CABS.R_ECI(1), CABS.R_ECI(2), CABS.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(4) = plot3(man4_R_CABS(:,1), man4_R_CABS(:,2), man4_R_CABS(:,3), '-.', 'Color', 'b'); % chaser orbit
+run('plotEarth');
+axis equal
+xlabel('X ECI [km]')
+ylabel('Y ECI [km]')
+zlabel('Z ECI [km]')
+title('Maneuver 4: Hop Trajectory -- ECI')
+zlim([-2e4 2e4])
+legend('LES Position', 'LES Orbit', 'CABS Position', 'CABS Orbit')
+grid on
+
+
+% update delta v
+CABS.V_ECI = CABS.V_ECI - deltav_man4_ECI;
 
 % update time
 [t_mission] = missiontime(t_mission, dt_man4);
@@ -512,7 +642,7 @@ disp("     ===     HOLD 5     ===     ")
 downrange = man4_R(end, 2); %[km]
 
 % call hold function
-[t_hold5, deltav_hold5, out_hold5] = Football(downrange, 2*LES_orbit.P);
+[t_hold5, deltav_hold5, out_hold5] = Football(downrange, LES_orbit.P);
 % assign outputs
 hold5_R = out_hold5(:,1:3);
 hold5_V = out_hold5(:, 4:6);
@@ -532,25 +662,23 @@ dt_hold5 = t_hold5(end); % hold 5 duration [s]v
 y0_hold5_LES = [LES.R_ECI; LES.V_ECI];
 [~, LES.R_ECI, LES.V_ECI, hold5on_R_LES, hold5on_V_LES] = propogate(dt_hold5, y0_hold5_LES, options, mu_Earth);
 
+% at 1/4, 1/2, 3/4 period for plotting
+[~, LES_14, ~, ~, ~] = propogate(dt_hold5*(1/4), y0_hold2_LES, options, mu_Earth);
+[~, LES_12, ~, ~, ~] = propogate(dt_hold5*(1/2), y0_hold2_LES, options, mu_Earth);
+[~, LES_34, ~, ~, ~] = propogate(dt_hold5*(3/4), y0_hold2_LES, options, mu_Earth);
+
 % propogate chaser
 y0_hold5_CABS = [CABS.R_ECI; CABS.V_ECI];
 [~, CABS.R_ECI, CABS.V_ECI, hold5on_R_CABS, hold5on_V_CABS] = propogate(dt_hold5, y0_hold5_CABS, options, mu_Earth);
 
+% at 1/4, 1/2, 3/4 period for plotting
+[~, CABS_14, ~, ~, ~] = propogate(dt_hold5*(1/4), y0_hold2_CABS, options, mu_Earth);
+[~, CABS_12, ~, ~, ~] = propogate(dt_hold5*(1/2), y0_hold2_CABS, options, mu_Earth);
+[~, CABS_34, ~, ~, ~] = propogate(dt_hold5*(3/4), y0_hold2_CABS, options, mu_Earth);
+
 % define velocity to get off hold
 deltav_hold5off_ECI = -deltav_hold5_ECI; %[km/s]
 CABS.V_ECI = CABS.V_ECI + deltav_hold5off_ECI; %[km/s]
-
-% find remaining hold time
-dt_remain = dt_24 - dt_hold5; % remaining hold time [s]
-
-% propogate remaining hold time
-% propogate target
-y0_hold5_LES = [LES.R_ECI; LES.V_ECI];
-[~, LES.R_ECI, LES.V_ECI, hold5off_R_LES, hold5off_V_LES] = propogate(dt_hold5, y0_hold5_LES, options, mu_Earth);
-
-% propogate chaser
-y0_hold5_CABS = [CABS.R_ECI; CABS.V_ECI];
-[~, CABS.R_ECI, CABS.V_ECI, hold5off_R_CABS, hold5off_V_CABS] = propogate(dt_hold5, y0_hold5_CABS, options, mu_Earth);
 
 % disp delta v
 deltav_tot = deltav_tot + 2*norm(deltav_hold5);
@@ -565,6 +693,29 @@ disp("Second Burn Maneuver delta v (ECI) [m/s]: ")
 disp(1000*deltav_hold5off_ECI)
 disp("Total Manuever delta v [m/s]: " + 1000*norm(deltav_hold5off_ECI))
 disp("Total Mission delta v Expenditure [m/s]: " + 1000*deltav_tot)
+
+
+figure()
+r(1) = plot3(LES.R_ECI(1), LES.R_ECI(2), LES.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+hold on
+r(2) = plot3(hold5on_R_LES(:, 1), hold5on_R_LES(:, 2), hold5on_R_LES(:, 3), '-.', 'Color', 'r'); % target orbit
+r(3) = plot3(CABS.R_ECI(1), CABS.R_ECI(2), CABS.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(4) = plot3(hold5on_R_CABS(:, 1), hold5on_R_CABS(:, 2), hold5on_R_CABS(:, 3), '-.', 'Color', 'b'); % chaser orbit
+r(5) = plot3(LES_14(1), LES_14(2), LES_14(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+r(6) = plot3(CABS_14(1), CABS_14(2), CABS_14(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(7) = plot3(LES_12(1), LES_12(2), LES_12(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+r(8) = plot3(CABS_12(1), CABS_12(2), CABS_12(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(9) = plot3(LES_34(1), LES_34(2), LES_34(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+r(10) = plot3(CABS_34(1), CABS_34(2), CABS_34(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+run('plotEarth');
+axis equal
+xlabel('X ECI [km]')
+ylabel('Y ECI [km]')
+zlabel('Z ECI [km]')
+title('Hold 5: Football Trajectory -- ECI')
+zlim([-2e4 2e4])
+legend('LES Position', 'LES Orbit', 'CABS Position', 'CABS Orbit')
+grid on
 
 % update time
 [t_mission] = missiontime(t_mission, dt_hold5 + dt_remain);
@@ -589,6 +740,7 @@ vc = -downrange/t_remain; % set time to complete 10 days[km/s]
 [t_man5, out_man5] = Vbar(downrange, vc, LES_orbit.P, dt);
 % assign outputs
 man5_R = out_man5(:,1:3);
+dt_man5 = t_man5(end); % maneuver 1 duration [s]
 
 % --- ECI CALCULATIONS --
 % define rotation
@@ -607,8 +759,34 @@ disp(1000*deltav_man5_ECI)
 disp("Total Manuever delta v [m/s]: " + 1000*norm(deltav_man5_ECI))
 disp("Total Mission delta v Expenditure [m/s]: " + 1000*deltav_tot)
 
+
+% propogate target
+y0_man5_LES = [LES.R_ECI; LES.V_ECI];
+[~, LES.R_ECI, LES.V_ECI, man5_R_LES, man5_V_LES] = propogate(dt_man5 + .3, y0_man5_LES, options, mu_Earth);
+
+% propogate chaser
+y0_man5_CABS = [CABS.R_ECI; CABS.V_ECI];
+[~, CABS.R_ECI, CABS.V_ECI, man5_R_CABS, man5_V_CABS] = propogate(dt_man5, y0_man5_CABS, options, mu_Earth);
+
+% --- PLOT ---
+figure()
+r(1) = plot3(LES.R_ECI(1), LES.R_ECI(2), LES.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'r'); % Target R
+hold on
+r(2) = plot3(man5_R_LES(:, 1), man5_R_LES(:, 2), man5_R_LES(:, 3), '-.', 'Color', 'r'); % target orbit
+r(3) = plot3(CABS.R_ECI(1), CABS.R_ECI(2), CABS.R_ECI(3), '.', 'MarkerSize', 10, 'Color', 'b'); % Chaser R
+r(4) = plot3(man5_R_CABS(:,1), man5_R_CABS(:,2), man5_R_CABS(:,3), '-.', 'Color', 'b'); % chaser orbit
+run('plotEarth');
+axis equal
+xlabel('X ECI [km]')
+ylabel('Y ECI [km]')
+zlabel('Z ECI [km]')
+title('Maneuver 5: Vbar Approach -- ECI')
+zlim([-2e4 2e4])
+xlim([-2e4 2e4])
+legend('LES Position', 'LES Orbit', 'CABS Position', 'CABS Orbit')
+grid on
+
 % update time
-dt_man5 = t_man5(end); % maneuver 1 duration [s]
 [t_mission] = missiontime(t_mission, dt_man5);
 disp("--------------------------------------------------------------------")
 %% ===== RESULTS =====

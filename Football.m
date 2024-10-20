@@ -23,5 +23,5 @@ deltav_LVLH = V_0; % applied delta V in LVLh [km/s]
 state0 = [R_0; V_0];     % downrange in y, delta v in x
 
 % call circular propogation
-options = odeset('RelTol',1e-8,'AbsTol',1e-8);
+options = odeset('RelTol',1e-10,'AbsTol',1e-10);
 [t, out] = ode45(@circEOM, [0 P], state0, options, n);
